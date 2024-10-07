@@ -1,7 +1,5 @@
 import * as THREE from 'three';
-
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
-
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js'
 
 export const initScene = () => {
@@ -42,7 +40,8 @@ export const initScene = () => {
     let drawingContext = null;
     let material = null;
 
-    loader.load('/model/lemon_1k.gltf', function (gltf) {
+    //'/model/lemon/lemon_1k.gltf'
+    loader.load('/model/lemon/lemon_1k.gltf', function (gltf) {
         gltf.scene.traverse((obj) => {
             if (obj.isMesh) {
                 model = obj;
@@ -149,6 +148,7 @@ export const initScene = () => {
 
         if (model) {
             model.rotation.x = elapsedTime * 0.1;
+            model.rotation.y = elapsedTime * 0.1;
         }
 
 
