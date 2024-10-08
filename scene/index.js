@@ -1,9 +1,19 @@
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js'
+import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
+import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
+import { ShaderPass } from 'three/addons/postprocessing/ShaderPass.js';
+import { ACESFilmicToneMappingShader } from 'three/addons/shaders/ACESFilmicToneMappingShader.js';
+import { OutputPass } from 'three/addons/postprocessing/OutputPass.js'
 
 export const initScene = () => {
     let paint = false;
+
+    let pencilParams = {
+        color: 'rgba(75, 0, 130, 0.8)',
+        size: 15
+    }
 
     const clock = new THREE.Clock()
 
@@ -11,24 +21,28 @@ export const initScene = () => {
     const pointer = new THREE.Vector2();
 
     // Renderer
-    const renderer = new THREE.WebGLRenderer({ antialias: true });
+    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
     renderer.setSize(window.innerWidth, window.innerHeight);
     renderer.setAnimationLoop(animate);
+    renderer.setPixelRatio((window.devicePixelRatio) ? window.devicePixelRatio : 1);
     document.body.appendChild(renderer.domElement);
 
     // Scene
     const scene = new THREE.Scene();
-    scene.background = new THREE.Color(0x000000);
 
     // Camera
     const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-    camera.position.z = 0.15;
+    camera.position.z = 3;
 
     // Controls
     const controls = new OrbitControls(camera, renderer.domElement);
-    controls.update();
     controls.enableDamping = true;
-    controls.enabled = false;
+    controls.enabled = true;
+    controls.mouseButtons = {
+        RIGHT: THREE.MOUSE.ROTATE,
+    }
+    controls.minDistance = 2
+    controls.maxDistance = 5
 
 
     // Model
@@ -41,7 +55,7 @@ export const initScene = () => {
     let material = null;
 
     //'/model/lemon/lemon_1k.gltf'
-    loader.load('/model/lemon/lemon_1k.gltf', function (gltf) {
+    loader.load('/model/pumpkin/pumpkin.gltf', function (gltf) {
         gltf.scene.traverse((obj) => {
             if (obj.isMesh) {
                 model = obj;
@@ -65,7 +79,6 @@ export const initScene = () => {
 
                 material = new THREE.MeshBasicMaterial({
                     map: originalMap,
-                    transparent: true
                 });
 
                 // Add overlay as second map
@@ -113,8 +126,8 @@ export const initScene = () => {
         const y = (1 - uv.y) * textureCanvas.height;
 
         drawingContext.beginPath();
-        drawingContext.arc(x, y, 10, 0, 2 * Math.PI);
-        drawingContext.fillStyle = 'rgba(0, 0, 0, 0.5)';
+        drawingContext.arc(x, y, pencilParams.size, 0, 2 * Math.PI);
+        drawingContext.fillStyle = pencilParams.color;
         drawingContext.fill();
 
         overlayMap.needsUpdate = true;
@@ -137,6 +150,19 @@ export const initScene = () => {
         }
     };
 
+    //Postprocessing
+    const composer = new EffectComposer(renderer);
+
+    const renderPass = new RenderPass(scene, camera);
+    composer.addPass(renderPass);
+
+    const luminosityPass = new ShaderPass(ACESFilmicToneMappingShader);
+    composer.addPass(luminosityPass);
+
+    const outputPass = new OutputPass();
+    composer.addPass(outputPass);
+
+
     const onWindowResize = () => {
         camera.aspect = window.innerWidth / window.innerHeight;
         camera.updateProjectionMatrix();
@@ -144,24 +170,31 @@ export const initScene = () => {
     };
 
     function animate() {
+
         const elapsedTime = clock.getElapsedTime()
 
         if (model) {
-            model.rotation.x = elapsedTime * 0.1;
-            model.rotation.y = elapsedTime * 0.1;
+            // model.rotation.x = elapsedTime * 0.1;
+            // model.rotation.y = elapsedTime * 0.1;
         }
-
 
         raycaster.setFromCamera(pointer, camera);
         controls.update();
-        renderer.render(scene, camera);
+        // renderer.render(scene, camera);
+        composer.render();
+
     }
 
     window.addEventListener('resize', onWindowResize);
-    window.addEventListener('pointerdown', () => paint = true);
+    window.addEventListener('pointerdown', (e) => {
+        if (e.pointerType !== 'mouse' || e.button === 0) {
+            paint = true
+        }
+    });
     window.addEventListener('pointermove', (e) => onMouseMove(e));
     window.addEventListener('pointerup', () => paint = false);
 
     requestAnimationFrame(animate);
+
 };
 
