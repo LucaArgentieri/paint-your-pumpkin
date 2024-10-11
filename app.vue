@@ -1,5 +1,35 @@
+<script setup>
+  const modelLoader = ref(0)
+
+
+  onMounted(() => {
+    window.addEventListener('blur', (e) => {
+      useHead({
+        title: 'BHOOO',
+      })
+    })
+
+    window.addEventListener('focus', (e) => {
+      useHead({
+        title: 'Paint your pumpkin',
+      })
+    })
+  })
+
+  useHead({
+    title: 'Paint your pumpkin',
+  })
+</script>
+
 <template>
-  <NuxtPage />
+  <main>
+    <Loader :loader="modelLoader" />
+    <BackgroundText />
+    <BackgroundNoise />
+    <ClientOnly>
+      <Pumpkin v-model:loader="modelLoader" />
+    </ClientOnly>
+  </main>
 </template>
 
 <style>

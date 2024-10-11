@@ -7,14 +7,12 @@ export default defineNuxtConfig({
   },
   site: {
     url: 'https://nuxt.com/',
-    name: 'Paint your pumpkin',
+    title: 'Paint your pumpkin',
     description: 'Paint your pumpkin experiment, model generated with ia',
-  },
-  seo: {
-    fallbackTitle: false
   },
   app: {
     head: {
+      titleTemplate: '%s',
       link: [{ rel: 'icon', type: 'image/svg+xml', href: '/favicon.svg' }]
     }
   }
