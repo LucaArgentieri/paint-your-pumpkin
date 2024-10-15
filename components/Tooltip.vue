@@ -7,11 +7,13 @@
 <template>
   <Transition>
     <div v-if="modalIsOpen"
-      class="tooltip absolute bottom-[40px] right-0 translate-x-full bg-[#f9f9f9] w-[60vw] lg:w-[20vw] rounded-md p-s flex items-center justify-around gap-s shadow-2xl">
-      <label class="flex flex-col" for="color">
+      class="tooltip absolute bottom-[40px] right-0 translate-x-full bg-[#f9f9f9] w-[60vw] xl:w-[20vw] rounded-md p-s pb-m flex flex-col gap-s shadow-2xl">
+      <label class="flex flex-col w-fit" for="color">
+        Color
         <input type="color" name="color" id="color" v-model="color" />
       </label>
-      <label class="flex flex-col" for="size">
+      <label class="flex flex-col w-fit" for="size">
+        Size {{ size }}
         <input type="range" name="size" id="size" min="1" max="20" v-model="size">
       </label>
     </div>
@@ -45,8 +47,8 @@
   input[type='color'] {
     appearance: none;
     background-color: transparent;
-    width: 50px;
-    height: 50px;
+    width: 40px;
+    height: 40px;
     cursor: pointer;
   }
 
@@ -56,6 +58,7 @@
 
   input[type='range'] {
     -webkit-appearance: none;
+    margin-top: 5px;
     width: 100%;
     height: 5px;
     border-radius: 5px;
@@ -64,8 +67,8 @@
 
   input[type='range']::-webkit-slider-thumb {
     -webkit-appearance: none;
-    width: 30px;
-    height: 30px;
+    width: 25px;
+    height: 25px;
     border: 0;
     background: url('/pumpkin.png');
     background-size: contain;

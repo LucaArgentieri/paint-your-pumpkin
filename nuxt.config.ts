@@ -7,7 +7,7 @@ export default defineNuxtConfig({
   },
   site: {
     url: 'https://nuxt.com/',
-    title: 'Paint your pumpkin',
+    title: 'Paint your pumpkin 🎃',
     description: 'Paint your pumpkin experiment, model generated with ia',
   },
   app: {

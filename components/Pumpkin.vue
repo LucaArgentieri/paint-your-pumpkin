@@ -8,15 +8,14 @@
     import { ACESFilmicToneMappingShader } from 'three/addons/shaders/ACESFilmicToneMappingShader.js';
     import { N8AOPass } from "n8ao"
     import { TAARenderPass } from 'three/examples/jsm/postprocessing/TAARenderPass.js';
-    import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js'
     import { OutputPass } from 'three/addons/postprocessing/OutputPass.js'
+    import { FilmShader } from 'three/addons/shaders/FilmShader.js'
 
     const modelLoader = defineModel('loader')
 
     const modalIsOpen = ref(false)
-
     const canvasRef = ref(null)
-    const color = ref('#ffffff')
+    const color = ref('#000000')
     const size = ref(7)
 
     const initScene = () => {
@@ -24,14 +23,13 @@
         let model = null;
         let isAnimated = false;
 
-
         const clock = new THREE.Clock()
 
         const raycaster = new THREE.Raycaster();
         const pointer = new THREE.Vector2();
 
         // Renderer
-        const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+        const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false });
         renderer.setSize(window.innerWidth, window.innerHeight);
         renderer.setAnimationLoop(animate);
         renderer.setPixelRatio(1);
@@ -39,6 +37,10 @@
 
         // Scene
         const scene = new THREE.Scene();
+        const textureLoader = new THREE.TextureLoader();
+        const backgroundTexture = textureLoader.load('./slide.jpg');
+        const mobileBackgroundTexture = textureLoader.load('./mobileBg.jpg');
+        scene.background = backgroundTexture;
 
         // Camera
         const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
@@ -71,7 +73,7 @@
             gltf.scene.traverse((obj) => {
                 if (obj.isMesh) {
                     model = obj;
-                    // model.geometry.center();
+                    model.geometry.center();
 
                     // OG Texture
                     originalMap = obj.material.map.clone();
@@ -81,10 +83,6 @@
                     textureCanvas.width = 2048;
                     textureCanvas.height = 2048;
                     drawingContext = textureCanvas.getContext('2d');
-
-                    // Transparent first render
-                    drawingContext.fillStyle = 'rgba(0, 0, 0, 0)';
-                    drawingContext.fillRect(0, 0, textureCanvas.width, textureCanvas.height);
 
                     overlayMap = new THREE.CanvasTexture(textureCanvas);
                     overlayMap.needsUpdate = true;
@@ -99,15 +97,16 @@
 
                         // Update verte with `vUv`
                         shader.vertexShader = `
-                        varying vec2 vUv;
-                        ${shader.vertexShader}
-                    `.replace(
-                            `#include <uv_vertex>`,
+                                varying vec2 vUv;
+                                ${shader.vertexShader}
                             `
-                        vUv = uv;
-                        #include <uv_vertex>
-                        `
-                        );
+                            .replace(
+                                `#include <uv_vertex>`,
+                                `
+                                vUv = uv;
+                                #include <uv_vertex>
+                                `
+                            );
 
                         // Update fragment shader to mix textures
                         shader.fragmentShader = `
@@ -129,12 +128,77 @@
                     scene.add(model);
                 }
             });
-        },
-            (xhr) => {
-            },
-            function (error) {
-                console.error(error);
-            });
+        })
+
+        //Postprocessing
+        const renderPass = new RenderPass(scene, camera);
+
+        const n8aopass = new N8AOPass(scene, camera, window.innerWidth, window.innerHeight, {
+            intensity: 1.5,
+            distance: 0.3,
+            resolutionScale: 0.75,
+            samples: 16,
+        });
+        n8aopass.configuration.gammaCorrection = true;
+
+        const luminosityPass = new ShaderPass(ACESFilmicToneMappingShader);
+
+        const taaPass = new TAARenderPass(scene, camera);
+        taaPass.sampleLevel = 2;
+
+        const filmPass = new ShaderPass(FilmShader);
+        filmPass.uniforms['intensity'].value = 0.5;
+        //Enable grayscale
+        // filmPass.uniforms['grayscale'].value = false;
+
+        const outputPass = new OutputPass();
+
+        const composer = new EffectComposer(renderer);
+        composer.addPass(renderPass);
+        composer.addPass(n8aopass);
+        composer.addPass(luminosityPass);
+        composer.addPass(taaPass);
+        composer.addPass(filmPass);
+        composer.addPass(outputPass);
+
+        const drawOnOverlay = (uv) => {
+            const x = uv.x * textureCanvas.width;
+            const y = (1 - uv.y) * textureCanvas.height;
+
+
+            const printColor = (colorValue) => {
+                const color = colorValue
+                const r = parseInt(color.substr(1, 2), 16)
+                const g = parseInt(color.substr(3, 2), 16)
+                const b = parseInt(color.substr(5, 2), 16)
+                return [r, g, b]
+            }
+
+            drawingContext.beginPath();
+            drawingContext.arc(x, y, size.value, 0, 2 * Math.PI);
+            drawingContext.fillStyle = `rgba(${printColor(color.value)},0.5)`;
+
+            drawingContext.fill();
+
+            overlayMap.needsUpdate = true;
+        };
+
+        const onMouseMove = (e) => {
+            pointer.x = (e.clientX / window.innerWidth) * 2 - 1;
+            pointer.y = -(e.clientY / window.innerHeight) * 2 + 1;
+
+            if (model) {
+                const intersects = raycaster.intersectObject(model);
+
+                if (intersects.length > 0) {
+                    const intersect = intersects[0];
+                    const uv = intersect.uv;
+                    if (paint) {
+                        drawOnOverlay(uv);
+                    }
+                }
+            }
+        };
 
         const animateOnce = () => {
             if (!isAnimated) {
@@ -165,82 +229,30 @@
 
         }
 
-        const drawOnOverlay = (uv) => {
-            const x = uv.x * textureCanvas.width;
-            const y = (1 - uv.y) * textureCanvas.height;
-
-            drawingContext.beginPath();
-            drawingContext.arc(x, y, size.value, 0, 2 * Math.PI);
-            drawingContext.fillStyle = color.value;
-            drawingContext.fill();
-
-            overlayMap.needsUpdate = true;
-        };
-
-        const onMouseMove = (e) => {
-            pointer.x = (e.clientX / window.innerWidth) * 2 - 1;
-            pointer.y = -(e.clientY / window.innerHeight) * 2 + 1;
-
-            if (model) {
-                const intersects = raycaster.intersectObject(model);
-
-                if (intersects.length > 0) {
-                    const intersect = intersects[0];
-                    const uv = intersect.uv;
-                    if (paint) {
-                        drawOnOverlay(uv);
-                    }
-                }
+        const setSceneBackground = () => {
+            if (window.innerWidth < 640) {
+                scene.background = mobileBackgroundTexture;
+            } else {
+                scene.background = backgroundTexture;
             }
-        };
-
-        //Postprocessing
-        const composer = new EffectComposer(renderer);
-
-        const renderPass = new RenderPass(scene, camera);
-        composer.addPass(renderPass);
-
-        const n8aopass = new N8AOPass(scene, camera, window.innerWidth, window.innerHeight, {
-            intensity: 1.5,
-            distance: 0.3,
-            resolutionScale: 0.75,
-            samples: 16,
-        });
-        n8aopass.configuration.gammaCorrection = false;
-        composer.addPass(n8aopass);
-
-        const luminosityPass = new ShaderPass(ACESFilmicToneMappingShader);
-        composer.addPass(luminosityPass);
-
-        const bloomPass = new UnrealBloomPass(
-            new THREE.Vector2(window.innerWidth, window.innerHeight),
-            0.5,   // Bloom intensity
-            0.4,   // Bloom radius
-            0.85   // Threshold
-        );
-        composer.addPass(bloomPass);
-
-        const taaPass = new TAARenderPass(scene, camera);
-        taaPass.sampleLevel = 2;
-        composer.addPass(taaPass);
-
-
-        const outputPass = new OutputPass();
-        composer.addPass(outputPass);
-
+        }
 
         const onWindowResize = () => {
             camera.aspect = window.innerWidth / window.innerHeight;
             camera.updateProjectionMatrix();
+
+            setSceneBackground()
+
             renderer.setSize(window.innerWidth, window.innerHeight);
             composer.setSize(window.innerWidth, window.innerHeight);
             n8aopass.setSize(window.innerWidth, window.innerHeight);
             taaPass.setSize(window.innerWidth, window.innerHeight);
         };
 
-
         function animate() {
             // const elapsedTime = clock.getElapsedTime()
+            let delta = clock.getDelta();
+            filmPass.uniforms['time'].value += delta * 1;
 
             if (model) {
                 animateOnce()
@@ -262,6 +274,7 @@
         window.addEventListener('pointermove', (e) => onMouseMove(e));
         window.addEventListener('pointerup', () => paint = false);
 
+        setSceneBackground()
     };
 
     onMounted(() => {
@@ -273,9 +286,7 @@
 <template>
     <div class="absolute left-0 top-0 w-full h-full z-[2]" ref="canvasRef"></div>
     <div class="absolute left-[5%] bottom-[5%] bg-[transparent] border-none z-[3]">
-        <button @click="modalIsOpen = !modalIsOpen">
-            <GhostSvg :color="color" />
-        </button>
+        <GhostButton @click="modalIsOpen = !modalIsOpen" />
         <Tooltip :modalIsOpen v-model:color="color" v-model:size="size" />
     </div>
 </template>

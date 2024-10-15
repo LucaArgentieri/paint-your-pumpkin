@@ -1,0 +1,11 @@
+Model Information:
+* title:	PUMPKIN
+* source:	https://sketchfab.com/3d-models/pumpkin-82ab953fe5a14867a5801a6f96c27267
+* author:	NJMDesign (https://sketchfab.com/NJMDesign)
+
+Model License:
+* license type:	CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
+* requirements:	Author must be credited. Commercial use is allowed.
+
+If you use this 3D model in your project be sure to copy paste this credit wherever you share it:
+This work is based on "PUMPKIN" (https://sketchfab.com/3d-models/pumpkin-82ab953fe5a14867a5801a6f96c27267) by NJMDesign (https://sketchfab.com/NJMDesign) licensed under CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
