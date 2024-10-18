@@ -50,7 +50,13 @@
       }
     }
 
+    @font-face {
+      font-family: "Basteleur-Bold";
+      src: url("/fonts/Basteleur-Bold.woff2");
+    }
+
     body {
+      font-family: "Basteleur-Bold", sans-serif;
       overflow: hidden;
       overscroll-behavior: none;
     }

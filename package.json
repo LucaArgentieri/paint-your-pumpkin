@@ -19,6 +19,8 @@
     "vue-router": "latest"
   },
   "devDependencies": {
+    "@vueuse/core": "^11.1.0",
+    "@vueuse/nuxt": "^11.1.0",
     "three": "^0.169.0"
   }
 }

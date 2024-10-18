@@ -7,13 +7,13 @@
 <template>
   <Transition>
     <div v-if="modalIsOpen"
-      class="tooltip absolute bottom-[40px] right-0 translate-x-full bg-[#f9f9f9] w-[60vw] xl:w-[20vw] rounded-md p-s pb-m flex flex-col gap-s shadow-2xl">
+      class="tooltip text-[18px] absolute bottom-[40px] right-0 translate-x-full bg-[#f9f9f9] min-w-[50vw] md:min-w-[20vw] 2xl:min-w-[10vw] rounded-md p-s pb-l lg:pb-m flex flex-col gap-s shadow-2xl">
       <label class="flex flex-col w-fit" for="color">
         Color
         <input type="color" name="color" id="color" v-model="color" />
       </label>
       <label class="flex flex-col w-fit" for="size">
-        Size {{ size }}
+        Size: {{ size }}
         <input type="range" name="size" id="size" min="1" max="20" v-model="size">
       </label>
     </div>
@@ -36,12 +36,12 @@
     content: " ";
     position: absolute;
     bottom: -20px;
-    left: 20px;
+    left: 10px;
     z-index: 5;
-    margin-left: -10px;
+    margin-left: 0px;
     border-width: 10px;
     border-style: solid;
-    border-color: white transparent transparent transparent;
+    border-color: #f9f9f9 transparent transparent transparent;
   }
 
   input[type='color'] {

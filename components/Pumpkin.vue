@@ -16,7 +16,7 @@
     const modalIsOpen = ref(false)
     const canvasRef = ref(null)
     const color = ref('#000000')
-    const size = ref(7)
+    const size = ref(20)
 
     const initScene = () => {
         let paint = false;
@@ -38,7 +38,7 @@
         // Scene
         const scene = new THREE.Scene();
         const textureLoader = new THREE.TextureLoader();
-        const backgroundTexture = textureLoader.load('./slide.jpg');
+        const backgroundTexture = textureLoader.load('./bg.jpg');
         const mobileBackgroundTexture = textureLoader.load('./mobileBg.jpg');
         scene.background = backgroundTexture;
 
@@ -230,7 +230,7 @@
         }
 
         const setSceneBackground = () => {
-            if (window.innerWidth < 640) {
+            if (window.innerWidth < 768) {
                 scene.background = mobileBackgroundTexture;
             } else {
                 scene.background = backgroundTexture;
@@ -279,14 +279,18 @@
 
     onMounted(() => {
         initScene()
+
+        window.addEventListener('click', () => {
+            modalIsOpen.value = false
+        })
     })
 
 </script>
 
 <template>
     <div class="absolute left-0 top-0 w-full h-full z-[2]" ref="canvasRef"></div>
-    <div class="absolute left-[5%] bottom-[5%] bg-[transparent] border-none z-[3]">
-        <GhostButton @click="modalIsOpen = !modalIsOpen" />
-        <Tooltip :modalIsOpen v-model:color="color" v-model:size="size" />
+    <div class="absolute left-[10%] bottom-[5%] bg-[transparent] border-none z-[3]">
+        <GhostButton @click.stop="modalIsOpen = !modalIsOpen" />
+        <Tooltip @click.stop :modalIsOpen v-model:color="color" v-model:size="size" />
     </div>
 </template>
