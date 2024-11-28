@@ -59,6 +59,7 @@
       font-family: "Basteleur-Bold", sans-serif;
       overflow: hidden;
       overscroll-behavior: none;
+      background-color: theme('colors.black');
     }
 
     img,

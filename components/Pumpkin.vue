@@ -13,6 +13,7 @@
 
     const modelLoader = defineModel('loader')
 
+    const saveImageRef = ref(null)
     const modalIsOpen = ref(false)
     const canvasRef = ref(null)
     const color = ref('#000000')
@@ -219,12 +220,34 @@
                     // delay: 0.6,
                     ease: 'Expo.easeInOut'
                 })
+
+                tl.from(document.querySelector('.ghost-wrapper'), {
+                    opacity: 0,
+                    duration: 1,
+                    ease: "elastic.inOut"
+                }, 'ghost')
+
                 tl.from(document.querySelector('.ghost-svg'), {
                     opacity: 0,
                     duration: 1,
                     ease: "elastic.inOut(1,0.4)",
                     y: 10,
-                })
+                }, 'ghost')
+
+                tl.from(document.querySelector('.screenshot-wrapper'), {
+                    opacity: 0,
+                    duration: 1,
+                    ease: "elastic.inOut"
+                }, 'screenshot')
+
+                tl.from(document.querySelector('.screenshot-icon'), {
+                    opacity: 0,
+                    duration: 1,
+                    ease: "elastic.inOut(1,0.4)",
+                    y: 10,
+                }, 'screenshot')
+
+
             }
 
         }
@@ -237,10 +260,32 @@
             }
         }
 
+        const setSceneCamera = () => {
+            if (window.innerWidth < 768) {
+                camera.position.z = 3;
+            } else {
+                camera.position.z = 1;
+                camera.position.y = 0.3;
+            }
+        }
+
+
+        const saveImage = (e) => {
+            e.preventDefault();
+            renderer.render(scene, camera);
+            const dataURL = renderer.domElement.toDataURL("image/png");
+            const link = document.createElement('a');
+            link.download = 'pumpkin.png';
+            link.href = dataURL;
+            link.click();
+        }
+
+
         const onWindowResize = () => {
             camera.aspect = window.innerWidth / window.innerHeight;
             camera.updateProjectionMatrix();
 
+            setSceneCamera()
             setSceneBackground()
 
             renderer.setSize(window.innerWidth, window.innerHeight);
@@ -273,9 +318,13 @@
         });
         window.addEventListener('pointermove', (e) => onMouseMove(e));
         window.addEventListener('pointerup', () => paint = false);
+        saveImageRef.value.addEventListener('click', saveImage);
 
+
+        setSceneCamera()
         setSceneBackground()
     };
+
 
     onMounted(() => {
         initScene()
@@ -292,5 +341,13 @@
     <div class="absolute left-[10%] bottom-[5%] bg-[transparent] border-none z-[3]">
         <GhostButton @click.stop="modalIsOpen = !modalIsOpen" />
         <Tooltip @click.stop :modalIsOpen v-model:color="color" v-model:size="size" />
+    </div>
+    <div class="absolute right-[10%] bottom-[5%] bg-[transparent] border-none z-[3]">
+        <div
+            class="border-[1px] bg-black border-white rounded-full w-[50px] h-[50px] flex justify-center items-center overflow-hidden text-white screenshot-wrapper">
+            <a ref="saveImageRef" href="" class="screenshot-icon flex justify-center items-center group">
+                <span class="text-2xl group-hover:rotate-12 transition-transform ease-in-out duration-300">📸</span>
+            </a>
+        </div>
     </div>
 </template>

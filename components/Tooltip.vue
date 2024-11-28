@@ -7,7 +7,7 @@
 <template>
   <Transition>
     <div v-if="modalIsOpen"
-      class="tooltip text-[18px] absolute bottom-[40px] right-0 translate-x-full bg-[#f9f9f9] min-w-[50vw] md:min-w-[20vw] 2xl:min-w-[10vw] rounded-md p-s pb-l lg:pb-m flex flex-col gap-s shadow-2xl">
+      class="tooltip text-[18px] absolute bottom-[40px] right-0 translate-x-[calc(100%_-_25px)] bg-[#f9f9f9] min-w-[50vw] md:min-w-[20vw] 2xl:min-w-[10vw] rounded-md p-s pb-l lg:pb-m flex flex-col gap-s shadow-2xl">
       <label class="flex flex-col w-fit" for="color">
         Color
         <input type="color" name="color" id="color" v-model="color" />
