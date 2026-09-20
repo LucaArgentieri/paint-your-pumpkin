@@ -15,7 +15,6 @@
   const onTargetEnter = (entries) => {
     entries.forEach((entry) => {
       if (entry.isIntersecting) {
-        console.log('ciao');
 
         switch (entry.target.dataset.animation) {
           case "observer":
