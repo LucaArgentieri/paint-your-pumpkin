@@ -2,7 +2,7 @@
 
 ![Paint your pumpkin](public/og-image.png)
 
-An interactive Three.js experience where you carve and paint your own Halloween pumpkin.
+An interactive Three.js experience where you paint your own Halloween pumpkin.
 
 🔗 **Live demo:** [paint-your-pumpkin.netlify.app](https://paint-your-pumpkin.netlify.app/)
 
